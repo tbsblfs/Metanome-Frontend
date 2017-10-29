@@ -501,6 +501,7 @@ section.jumbotron h1 {
 
 .tabbar-content .active {
   background-color: #eeeeee;
+  display: table-cell !important;
 }
 
 /**
@@ -641,4 +642,3 @@ md-input-container label:not(.md-container-ignore) {
 h4.additional-settings {
   margin-bottom: -0px;
 }
-
