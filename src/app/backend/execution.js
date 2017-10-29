@@ -1,14 +1,14 @@
 'use strict';
 
 export default ['$resource', 'ENV_VARS',
-    function ($resource, ENV_VARS) {
-      return $resource(ENV_VARS.API + '/api/executions/get/:id', {}, {
-        get: {
-          method: 'GET',
-          params: {
-            id: '@id'
-          }
+  function($resource, ENV_VARS) {
+    return $resource(ENV_VARS.API + '/api/executions/get/:id', {}, {
+      get: {
+        method: 'GET',
+        params: {
+          id: '@id'
         }
-      });
-    }
-  ];
+      }
+    });
+  }
+];

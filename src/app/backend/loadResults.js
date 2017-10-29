@@ -1,26 +1,26 @@
 'use strict';
 
 export default ['$resource', 'ENV_VARS',
-    function ($resource, ENV_VARS) {
-      return $resource(ENV_VARS.API + '/api/result-store/:type/:id/:notDetailed', {}, {
-        load: {
-          method: 'POST',
-          params: {
-            id: '@id',
-            notDetailed: '@notDetailed',
-            type: 'load-execution'
-          },
-          isArray: true
+  function($resource, ENV_VARS) {
+    return $resource(ENV_VARS.API + '/api/result-store/:type/:id/:notDetailed', {}, {
+      load: {
+        method: 'POST',
+        params: {
+          id: '@id',
+          notDetailed: '@notDetailed',
+          type: 'load-execution'
         },
-        file: {
-          method: 'GET',
-          params: {
-            id: '@id',
-            notDetailed: '@notDetailed',
-            type: 'load-results'
-          },
-          isArray: true
-        }
-      });
-    }
-  ];
+        isArray: true
+      },
+      file: {
+        method: 'GET',
+        params: {
+          id: '@id',
+          notDetailed: '@notDetailed',
+          type: 'load-results'
+        },
+        isArray: true
+      }
+    });
+  }
+];
