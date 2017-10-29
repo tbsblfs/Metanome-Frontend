@@ -28,141 +28,59 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
 
   var defaultCacheSize = 50;
 
-  $scope.uniqueColumnCombination = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
-    },
-    selected: [],
-    params: {
+  const customizations = {
+    uniqueColumnCombination: {
       type: 'Unique Column Combination',
       sort: 'Column Combination',
-      from: 0,
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.functionalDependency = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
+    functionalDependency:  {
       type: 'Functional Dependency',
       sort: 'Determinant',
-      from: 0,
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.basicStatistic = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
+    basicStatistic: {
       type: 'Basic Statistic',
       sort: 'Column Combination',
-      from: 0,
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.denialConstraint = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
-      type: 'Denial Constraint',
-      sort: 'Predicates',
-      from: 0,
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.inclusionDependency = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
+    denialConstraint: {
+        type: 'Denial Constraint',
+        sort: 'Predicates',
     },
-    selected: [],
-    params: {
+    inclusionDependency: {
       type: 'Inclusion Dependency',
       sort: 'Dependant',
-      from: '0',
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.conditionalUniqueColumnCombination = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
+    conditionalUniqueColumnCombination: {
       type: 'Conditional Unique Column Combination',
       sort: 'Dependant',
-      from: '0',
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.orderDependency = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
+    orderDependency: {
       type: 'Order Dependency',
       sort: 'LHS',
-      from: '0',
-      to: defaultCacheSize
-    }
-  };
-
-  $scope.multivaluedDependency = {
-    count: 0,
-    data: [],
-    query: {
-      order: '',
-      limit: 10,
-      page: 1
     },
-    selected: [],
-    params: {
+    multivaluedDependency: {
       type: 'Multivalued Dependency',
       sort: 'Determinant',
-      from: '0',
-      to: defaultCacheSize
     }
-  };
+  }
+
+  Object.keys(customizations).forEach(function (key) {
+    $scope[key] = {
+      count: 0,
+      data: [],
+      query: {
+        order: '',
+        limit: 10,
+        page: 1
+      },
+      selected: [],
+      params: {
+        from: 0,
+        to: defaultCacheSize
+      }
+    };
+    $scope[key].params.type = customizations[key].type;
+    $scope[key].params.sort = customizations[key].sort;
+  });
 
   // ** FUNCTION DEFINITIONS **
   // **************************
