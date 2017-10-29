@@ -10,3 +10,4 @@ metanome
 src/app/scripts
 bower_components
 config.json
+.DS_Store
