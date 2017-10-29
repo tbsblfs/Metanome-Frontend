@@ -1,7 +1,6 @@
 'use strict';
 
-angular.module('Metanome')
-  .factory('LoadResults', ['$resource', 'ENV_VARS',
+export default ['$resource', 'ENV_VARS',
     function ($resource, ENV_VARS) {
       return $resource(ENV_VARS.API + '/api/result-store/:type/:id/:notDetailed', {}, {
         load: {
@@ -24,6 +23,4 @@ angular.module('Metanome')
         }
       });
     }
-  ])
-
-;
+  ];

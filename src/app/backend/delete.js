@@ -1,7 +1,6 @@
 'use strict';
 
-angular.module('Metanome')
-  .factory('Delete', ['$resource', 'ENV_VARS',
+export default ['$resource', 'ENV_VARS',
     function ($resource, ENV_VARS) {
       return $resource(ENV_VARS.API + '/api/:input/delete/:id', {}, {
         file: {
@@ -41,6 +40,4 @@ angular.module('Metanome')
         }
       });
     }
-  ])
-
-;
+  ];

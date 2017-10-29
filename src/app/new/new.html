@@ -2,13 +2,13 @@
 
   <div class="tabbar">
     <div class="tabbar-content" style="width: 100%">
-      <a ng-href='#/new' class="tabLink active">
+      <a ui-sref='new' class="tabLink active">
         <div class="tab"><span>NEW</span></div>
       </a>
-      <a ng-href='#/history' class="tabLink">
+      <a ui-sref='history' class="tabLink">
         <div class="tab"><span>HISTORY</span></div>
       </a>
-      <a ng-href='#/about' class="tabLink">
+      <a ui-sref='about' class="tabLink">
         <div class="tab"><span>ABOUT</span></div>
       </a>
 
@@ -67,7 +67,7 @@
                     <div class="algo-in-list md-list-item-text" ng-class="{active: item.active}"
                          ng-click="toggleDatasource(item)" style="margin: 0 -13px 0 -20px; padding: 6px 0 0px 4px;">
                       <h3>{{ item.name }} <span class="datasourceActions">
-                        <a ng-if="datasource.name == 'File Input'" style="color: black" ng-href="#/result/{{item.id}}?cached=false&file=true">
+                        <a ng-if="datasource.name == 'File Input'" style="color: black" ui-sref="result({resultId: item.id, cached:false, file: true})">
                           <i class="zmdi zmdi-square-right zmdi-hc-lg datasourceIcon"></i></a>
                         <a ng-if="!item.used" style="color: black">
                           <i class="zmdi zmdi-delete zmdi-hc-lg datasourceIcon" ng-click="confirmDelete(item)"></i></a>

@@ -1,21 +1,6 @@
 'use strict';
 
-var app = angular.module('Metanome')
-
-  .config(function config($stateProvider) {
-    $stateProvider
-      .state('result', {
-        url: '/result/:resultId?cached&count&load&file&extended&ind&od&ucc&cucc&fd&mvd&basicStat&dc',
-        views: {
-          'main@': {
-            controller: 'ResultCtrl',
-            templateUrl: 'app/result/result.html'
-          }
-        }
-      })
-  });
-
-app.controller('ResultCtrl', function ($scope, $log, Executions, Results, $q, usSpinnerService,
+export default function ($scope, Executions, Results, $q, usSpinnerService,
                                        $timeout, $stateParams, LoadResults, CountResults, Execution, File,
                                        ngDialog, $http, ENV_VARS) {
 
@@ -657,7 +642,8 @@ app.controller('ResultCtrl', function ($scope, $log, Executions, Results, $q, us
   function openFDVisualization() {
     $scope.openVisualizationType = 'FD';
     ngDialog.open({
-      template: '/assets/visualization.html',
+      template: require('./templates/visualization.html'),
+      plain: true,
       scope: $scope
     })
   }
@@ -668,7 +654,8 @@ app.controller('ResultCtrl', function ($scope, $log, Executions, Results, $q, us
   function openUCCVisualization() {
     $scope.openVisualizationType = 'UCC';
     ngDialog.open({
-      template: '/assets/visualization.html',
+      template: require('./templates/visualization.html'),
+      plain: true,
       scope: $scope
     })
   }
@@ -947,4 +934,4 @@ app.controller('ResultCtrl', function ($scope, $log, Executions, Results, $q, us
     loadDetailsForExecution();
   }
 
-});
+};

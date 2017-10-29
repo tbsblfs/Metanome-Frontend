@@ -1,7 +1,6 @@
 'use strict';
 
-angular.module('Metanome')
-  .factory('Parameter', ['$resource', 'ENV_VARS',
+export default ['$resource', 'ENV_VARS',
     function ($resource, ENV_VARS) {
       return $resource(ENV_VARS.API + '/api/parameter/:algorithm/:what', {}, {
         get: {
@@ -20,6 +19,4 @@ angular.module('Metanome')
         }
       });
     }
-  ])
-
-;
+  ];

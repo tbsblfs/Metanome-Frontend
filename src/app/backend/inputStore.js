@@ -1,7 +1,6 @@
 'use strict';
 
-angular.module('Metanome')
-  .factory('InputStore', ['$resource', 'ENV_VARS',
+export default ['$resource', 'ENV_VARS',
     function ($resource, ENV_VARS) {
       return $resource(ENV_VARS.API + '/api/:type/:action', {}, {
         newAlgorithm: {
@@ -62,6 +61,4 @@ angular.module('Metanome')
         }
       });
     }
-  ])
-
-;
+  ];

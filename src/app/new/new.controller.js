@@ -1,22 +1,6 @@
 'use strict';
 
-angular.module('Metanome')
-
-  .config(function config($stateProvider) {
-    $stateProvider
-      .state('new', {
-        url: '/new',
-        views: {
-          'main@': {
-            controller: 'NewCtrl',
-            templateUrl: 'app/new/new.html'
-          }
-        }
-      })
-  })
-
-  .controller('NewCtrl', function ($scope,
-                                   $log,
+export default function ($scope,
                                    ngDialog,
                                    Algorithms,
                                    Datasource,
@@ -228,7 +212,8 @@ angular.module('Metanome')
      */
     function openNewAlgorithm() {
       ngDialog.open({
-                      template: '/assets/new-algorithm.html',
+                      template: require('./templates/new-algorithm.html'),
+                      plain: true,
                       scope: $scope,
                       preCloseCallback: function () {
                         doneEditingAlgorithm()
@@ -357,7 +342,8 @@ angular.module('Metanome')
      */
     function openNewDatasource() {
       ngDialog.open({
-                      template: '/assets/new-datasource.html',
+                      template: require('./templates/new-datasource.html'),
+                      plain: true,
                       scope: $scope,
                       preCloseCallback: function () {
                         doneEditingDatasources()
@@ -676,18 +662,10 @@ angular.module('Metanome')
      */
     function openConfirm() {
       ngDialog.openConfirm({
-                             /*jshint multistr: true */
-                             template: '\
-                <h3>Confirm</h3>\
-                <p>{{$parent.confirmDescription}}</p>\
-                <p>{{$parent.confirmText}}</p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">No</button>\
-                    <button type="button" class="ngdialog-button ngdialog-button-warning" ng-click="$parent.confirmDialog(1)">Yes</button>\
-                </div>',
-                             plain: true,
-                             scope: $scope
-                           })
+        template: require('./templates/confirm.html'),
+        plain: true,
+        scope: $scope
+      })
     }
 
     /**
@@ -872,17 +850,23 @@ angular.module('Metanome')
                              }]
                            });*/
       AlgorithmExecution.run({}, payload, function (result) {
-        var url = '&ind=' + result.algorithm.ind + '&fd=' + result.algorithm.fd + '&ucc=' + result.algorithm.ucc +
-                      '&cucc=' + result.algorithm.cucc + '&od=' + result.algorithm.od + '&mvd=' + result.algorithm.mvd +
-                      '&basicStat=' + result.algorithm.basicStat + '&dc=' + result.algorithm.dc;
-
+        var url = {
+          ind:  result.algorithm.ind,
+          fd: result.algorithm.fd,
+          ucc: result.algorithm.ucc,
+          cucc:  result.algorithm.cucc,
+          od: result.algorithm.od,
+          mvd: result.algorithm.mvd,
+          basicStat: result.algorithm.basicStat,
+          dc: result.algorithm.dc,
+        };
 
         if (!$scope.canceled) {
+          url.resultId = result.id;
           if (caching === 'cache' || caching === 'disk') {
-            url = '#/result/' + result.id + '?cached=true' + url;
-
+            url.cached = true;
           } else {
-             url = '#/result/' + result.id + '?count=true' + url;
+             url.count = true;
           }
           notificationSuccess(result,url);
         }
@@ -1247,7 +1231,7 @@ angular.module('Metanome')
                      type: 'success',
                      bodyOutputType: 'trustedHtml',
                      title:'Algorithm execution successful!',
-                     body: 'Execution of Algorithm ' + result.algorithm.name + ' successful! <a href=\"' + url + '\">Show Results!</a>',
+                     body: 'Execution of Algorithm ' + result.algorithm.name + ' successful! <a ui-sref="result(' + JSON.stringify(url) + ')">Show Results!</a>',
                      showCloseButton: true,
                      positionClass: 'toast-top-full-width'
                    });
@@ -1592,13 +1576,7 @@ angular.module('Metanome')
     function openError(message) {
       $scope.errorMessage = message;
       ngDialog.open({
-                      /*jshint multistr: true */
-                      template: '\
-                <h3 style="color: #F44336">ERROR</h3>\
-                <p>{{errorMessage}}</p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">Ok</button>\
-                </div>',
+                      template: require('./templates/error.html'),
                       plain: true,
                       scope: $scope
                     })
@@ -1609,23 +1587,7 @@ angular.module('Metanome')
      */
     function openFileInputHelp() {
       ngDialog.open({
-                      /*jshint multistr: true */
-                      template: '\
-                <h3 style="color: rgb(63, 81, 181);">File Input Help</h3><br>\
-                <p>If you want to add new files to the available files, add your files to the folder <i>"/WEB-INF/classes/inputData/"</i>.\
-                CSV and TSV files are accepted by Metanome. The files need to be UTF-8 or ASCII encoded.</p><br/>\
-                <p><b>Additional settings</b>:<br>\
-                Do not escape any characters, Metanome is taking care of that.\
-                For example, if you want a backslash as escape character, just write a single "\\". \
-                For tab separator type in "\\t". \
-                For the null string you can either type in "\\0" or just leave the field empty. </p><br/>\
-                <p>Make sure, that you set the correct settings, so that your file input can be read. \
-                If a line could not be read properly, <i>null</i> is returned.\
-                Internally, <i>au.com.bytecode.opencsv.CSVReader</i> is used to read the input file.\
-                </p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">Ok</button>\
-                </div>',
+                      template: require('./templates/file-input-help.html'),
                       plain: true,
                       scope: $scope
                     })
@@ -1636,13 +1598,7 @@ angular.module('Metanome')
      */
     function openAlgorithmHelp() {
       ngDialog.open({
-                      /*jshint multistr: true */
-                      template: '\
-                <h3 style="color: rgb(63, 81, 181);">Algorithm Help</h3><br>\
-                <p>If you want to add new algorithm files to the available jar-files, add your jar-files to the folder <i>"/WEB-INF/classes/algorithms/"</i>.</p><br/>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">Ok</button>\
-                </div>',
+                      template: require('./templates/algorithm-help.html'),
                       plain: true,
                       scope: $scope
                     })
@@ -1683,4 +1639,4 @@ angular.module('Metanome')
     resetParameter();
     getFileSeparator();
 
-  });
+  };

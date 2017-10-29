@@ -1,21 +1,6 @@
 'use strict';
 
-var app = angular.module('Metanome')
-
-  .config(function config($stateProvider) {
-    $stateProvider
-      .state('history', {
-        url: '/history',
-        views: {
-          'main@': {
-            controller: 'HistoryCtrl',
-            templateUrl: 'app/history/history.html'
-          }
-        }
-      })
-  });
-
-app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $location, ngDialog, $timeout, Delete, StopExecution, usSpinnerService) {
+export default function($scope, Executions, $filter, $state, ngDialog, $timeout, Delete, StopExecution, usSpinnerService) {
 
   // ** VARIABLE DEFINITIONS **
   // **************************
@@ -52,20 +37,20 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
    * Loads the execution from the backend.
    */
   function loadExecutions() {
-    Executions.getAll({}, function (result) {
+    Executions.getAll({}, function(result) {
       $scope.content = [];
 
-      result.forEach(function (execution) {
+      result.forEach(function(execution) {
         // get the input names
         var inputs = [];
-        execution.inputs.forEach(function (input) {
+        execution.inputs.forEach(function(input) {
           input.name = input.name.replace(/^.*[\\\/]/, '');
           inputs.push(input.name)
         });
 
         // get the result types
         var results = [];
-        execution.results.forEach(function (result) {
+        execution.results.forEach(function(result) {
           results.push(result.typeName)
         });
         if (execution.aborted) {
@@ -130,13 +115,23 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
    * @param execution the execution
    */
   function showResult(execution) {
-        if (!execution.aborted) {
-          $location.url('/result/' + execution.id + '?count=' + execution.count + '&cached=' + execution.cached +
-          '&load=true' + '&ind=' + execution.ind + '&fd=' + execution.fd + '&ucc=' + execution.ucc +
-          '&cucc=' + execution.cucc + '&od=' + execution.od + '&mvd' + execution.mvd + '&basicStat=' + execution.basicStat +
-          '&dc=' + execution.dc);
-        }
-      }
+    if (!execution.aborted) {
+      $state.go('result', {
+        resultId: execution.id,
+        count: execution.count,
+        cached: execution.cached,
+        load: true,
+        ind: execution.ind,
+        fd: execution.fd,
+        ucc: execution.ucc,
+        cucc: execution.cucc,
+        od: execution.od,
+        mvd: execution.mvd,
+        basicStat: execution.basicStat,
+        dc: execution.dc,
+      });
+    }
+  }
 
   /**
    * Start the spinner.
@@ -160,32 +155,25 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
    * @param execution the execution
    */
   function confirmDelete(execution) {
-        $scope.confirmText = 'Are you sure you want to delete it?';
-        $scope.confirmItem = execution;
+    $scope.confirmItem = execution;
 
-        $scope.confirmFunction = function () {
-          $scope.startSpin();
-          Delete.execution({id: $scope.confirmItem.id}, function () {
-            $scope.loadExecutions()
-          });
-          $scope.stopSpin();
-          ngDialog.closeAll();
-        };
+    $scope.confirmFunction = function() {
+      $scope.startSpin();
+      Delete.execution({
+        id: $scope.confirmItem.id
+      }, function() {
+        $scope.loadExecutions()
+      });
+      $scope.stopSpin();
+      ngDialog.closeAll();
+    };
 
-        ngDialog.openConfirm({
-          /*jshint multistr: true */
-          template: '\
-                <h3>Confirm</h3>\
-                <p>{{$parent.confirmText}}</p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">No</button>\
-                    <button type="button" class="ngdialog-button ngdialog-button-warning" ng-click="$parent.confirmFunction(1)">Yes</button>\
-                </div>',
-          plain: true,
-          scope: $scope
-        })
-      }
-
+    ngDialog.openConfirm({
+      template: require('./templates/confirm-delete.html'),
+      plain: true,
+      scope: $scope
+    })
+  }
 
   /**
    * Opens a dialog, where the user has to confirm that he wants to stop the given execution.
@@ -193,13 +181,14 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
    * @param execution the execution
    */
   function confirmStop(execution) {
-    $scope.confirmText = 'Are you sure you want to stop the algorithm execution?';
     $scope.confirmItem = execution;
 
-    $scope.confirmFunction = function () {
+    $scope.confirmFunction = function() {
       $scope.startSpin();
 
-      StopExecution.stop({identifier: $scope.confirmItem.identifier }, function () {
+      StopExecution.stop({
+        identifier: $scope.confirmItem.identifier
+      }, function() {
         $scope.cancelFunction();
         $scope.loadExecutions()
       });
@@ -208,17 +197,10 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
     };
 
     ngDialog.openConfirm({
-                           /*jshint multistr: true */
-                           template: '\
-                <h3>Confirm</h3>\
-                <p>{{$parent.confirmText}}</p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">No</button>\
-                    <button type="button" class="ngdialog-button ngdialog-button-warning" ng-click="$parent.confirmFunction(1)">Yes</button>\
-                </div>',
-                           plain: true,
-                           scope: $scope
-                         })
+      template: require('./templates/confirm-stop.html'),
+      plain: true,
+      scope: $scope
+    })
   }
   // ** EXPORT FUNCTIONS **
   // **********************
@@ -235,4 +217,4 @@ app.controller('HistoryCtrl', function ($scope, $log, Executions, $filter, $loca
   // ********************
 
   loadExecutions();
-});
+};

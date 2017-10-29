@@ -2,16 +2,16 @@
 
   <div class="tabbar">
     <div class="tabbar-content">
-      <a ng-href='#/new' class="tabLink">
+      <a ui-sref='new' class="tabLink">
         <div class="tab"><span>NEW</span></div>
       </a>
-      <a ng-href='#/history' class="tabLink">
+      <a ui-sref='history' class="tabLink">
         <div class="tab"><span>HISTORY</span></div>
       </a>
       <a class="tabLink active">
         <div class="tab"><span>RESULT</span></div>
       </a>
-      <a ng-href='#/about' class="tabLink">
+      <a ui-sref='about' class="tabLink">
         <div class="tab"><span>ABOUT</span></div>
       </a>
 
@@ -28,7 +28,7 @@
       ng-if="execution.end > 0"> executed in {{duration}}</span>
       <span ng-if="execution.end == 0"> - EXECUTION ABORTED!</span>
       <a ng-if="!extended && !count && execution.end > 0"
-         ng-href="#/result/{{id}}?extended=true&cached={{cached}}&ind={{ind}}&fd={{fd}}&ucc={{ucc}}&cucc={{cucc}}&od={{od}}&basicStat={{basicStat}}&mvd={{mvd}}&dc={{dc}}"
+         ui-sref="result({ resultId: id, extended: true, cached: cached, ind: ind, fd: fd, ucc: ucc, cucc: cucc, od: od, basicStat: basicStat, mvd: mvd, dc:dc})"
          style="margin: -10px 10px -10px 0; float: right;">
         <md-button ng-click="executeAlgorithm(cachingSelection, memory)" class="md-raised md-primary">Load extended
           result
