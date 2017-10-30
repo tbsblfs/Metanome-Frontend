@@ -2,23 +2,24 @@
   <p style="margin-left: 20px; margin-top: 15px">Results for file '{{file.shortFileName}}'</p>
 </md-card>
 <md-card ng-if="execution">
-  <p style="margin-left: 20px; margin-top: 15px">Results for algorithm '{{execution.algorithm.fileName}}'<span ng-if="execution.end > 0">
+  <p style="margin-left: 20px; margin-top: 15px">Results for algorithm '{{execution.algorithm.fileName}}'
+    <span ng-if="execution.end > 0">
       executed in
-      {{duration}}</span>
+      {{duration}}
+    </span>
     <span ng-if="execution.end == 0">
       - EXECUTION ABORTED!</span>
     <a
       ng-if="!extended && !count && execution.end > 0"
       ui-sref="result({{extendedState}})"
       style="margin: -10px 10px -10px 0; float: right;">
-      <md-button ng-click="executeAlgorithm(cachingSelection, memory)" class="md-raised md-primary">Load extended result
+      <md-button ng-click="executeAlgorithm(cachingSelection, memory)" class="md-raised md-primary">
+        Load extended result
       </md-button>
     </a>
   </p>
 </md-card>
-<md-card
-  ng-repeat="resultType in resultTypes"
-  ng-if="(cached || file)  && resultType.count > 0">
+<md-card ng-repeat="resultType in resultTypes" ng-if="(cached || file)  && resultType.count > 0">
   <md-table-toolbar>
     <h2 class="md-title">{{resultType.params.type}}
       <md-button
@@ -26,7 +27,8 @@
         ng-click="openVisualization(resultType.visualization)"
         style="font-size: 12px; margin-top: -2px"
         md-no-ink
-        class="md-primary">Show visualization
+        class="md-primary">
+        Show visualization
       </md-button>
     </h2>
   </md-table-toolbar>
@@ -41,12 +43,12 @@
             name="{{column.name}}"
             ng-repeat-end>{{column.name}}</th>
           <th
-              md-column
-              ng-if="extended"
-              ng-repeat-start="column in resultType.extendedColumnNames"
-              md-order-by="{{column.order}}"
-              name="{{column.name}}"
-              ng-repeat-end>{{column.name}}</th>
+            md-column
+            ng-if="extended"
+            ng-repeat-start="column in resultType.extendedColumnNames"
+            md-order-by="{{column.order}}"
+            name="{{column.name}}"
+            ng-repeat-end>{{column.name}}</th>
         </tr>
       </thead>
       <tbody md-body>
@@ -66,16 +68,13 @@
     md-on-paginate="resultType.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
-<md-card
-  ng-repeat="resultType in resultTypes"
-  ng-if="count && resultType.count > 0">
+<md-card ng-repeat="resultType in resultTypes" ng-if="count && resultType.count > 0">
   <md-card-content>
     <h2 class="md-title">{{resultType.params.type}}</h2>
     {{resultType.count}}
   </md-card-content>
 </md-card>
-<md-card
-  ng-if="isEmptyResult()">
+<md-card ng-if="isEmptyResult()">
   <h3 style="margin: 20px" class="md-title">No results found!</h3>
 </md-card>
 <span us-spinner="{radius:50, width:20, length: 26}" spinner-key="spinner-2"></span>

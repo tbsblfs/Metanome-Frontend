@@ -7,10 +7,6 @@ export default function ($scope,
                                    Parameter,
                                    AlgorithmExecution,
                                    usSpinnerService,
-                                   $location,
-                                   InputStore,
-                                   AvailableAlgorithmFiles,
-                                   AvailableInputFiles,
                                    Delete,
                                    toaster,
                                    $animate
@@ -210,447 +206,31 @@ export default function ($scope,
     /**
      * Opens a dialog for editing or adding an algorithm.
      */
-    function openNewAlgorithm() {
-      ngDialog.open({
-                      template: require('./templates/new-algorithm.html'),
-                      plain: true,
-                      scope: $scope,
-                      preCloseCallback: function () {
-                        doneEditingAlgorithm()
-                      },
-                      controller: ['$scope', function ($scope) {
-
-                        // *** Variable Definitions ***
-
-                        if ($scope.$parent.AlgorithmToEdit) {
-                          $scope.newAlgorithm = $scope.$parent.AlgorithmToEdit;
-                          $scope.defaultAlgorithmText = $scope.newAlgorithm.fileName;
-                        } else {
-                          $scope.newAlgorithm = {};
-                          $scope.defaultAlgorithmText = '--choose an algorithm--';
-                          $scope.newAlgorithm.author = 'No author';
-                          $scope.newAlgorithm.description = 'No description';
-                        }
-                        $scope.algorithmFiles = [];
-
-                        // *** Function Definitions ***
-
-                        // Loads the available algorithm jars
-                        function loadAvailableAlgorithms() {
-                          $scope.$parent.AvailableAlgorithmFiles.get(function (result) {
-                            $scope.$parent.algorithms.forEach(function (algorithmCategory) {
-                              algorithmCategory.algorithms.forEach(function (algorithm) {
-                                var index = result.indexOf(algorithm.fileName);
-                                if (index !== -1) {
-                                  result.splice(index, 1);
-                                }
-                              })
-                            });
-                            $scope.algorithmFiles = result;
-                            if ($scope.$parent.AlgorithmToEdit) {
-                              $scope.algorithmFiles.push($scope.newAlgorithm.fileName);
-                            }
-                          });
-                        }
-
-                        // Save or update a algorithm
-                        function saveNewAlgorithm(algorithm) {
-                          resetAlgorithm();
-                          if (!algorithm.fileName) {
-                            openError('You have to select an algorithm jar-file!');
-                            return;
-                          }
-                          if (!algorithm.name) {
-                            openError('You have to insert an algorithm name!');
-                            return;
-                          }
-                          startSpin();
-                          var obj = {
-                            'id': algorithm.id,
-                            'fileName': algorithm.fileName,
-                            'name': algorithm.name,
-                            'author': algorithm.author,
-                            'description': algorithm.description,
-                            'ind': algorithm.ind,
-                            'fd': algorithm.fd,
-                            'ucc': algorithm.ucc,
-                            'cucc': algorithm.cucc,
-                            'od': algorithm.od,
-                            'mvd': algorithm.mvd,
-                            'basicStat': algorithm.basicStat,
-                            'dc': algorithm.dc,
-                            'relationalInput': algorithm.relationalInput,
-                            'databaseConnection': algorithm.databaseConnection,
-                            'tableInput': algorithm.tableInput,
-                            'fileInput': algorithm.fileInput
-                          };
-                          if ($scope.$parent.AlgorithmToEdit) {
-                            $scope.$parent.InputStore.updateAlgorithm(obj, function () {
-                              stopSpin();
-                              initializeAlgorithmList();
-                              ngDialog.closeAll()
-                            }, function (errorMessage) {
-                              stopSpin();
-                              openError('An error occurred when updating this algorithm: ' + errorMessage.data)
-                            })
-                          }
-                          else {
-                            $scope.$parent.InputStore.newAlgorithm(obj, function () {
-                              stopSpin();
-                              initializeAlgorithmList();
-                              ngDialog.closeAll()
-                            }, function (errorMessage) {
-                              stopSpin();
-                              openError('An error occurred when saving this algorithm: ' + errorMessage.data)
-                            })
-                          }
-                        }
-
-                        // Updates author and description of an algorithm, if another algorithm is selected in the dropdown
-                        function algorithmFileChanged() {
-                          Parameter.authorsDescription({algorithm: $scope.newAlgorithm.fileName}, function (data) {
-                            if (data.authors === undefined || !data.authors) {
-                              $scope.newAlgorithm.author = 'No author';
-                            } else {
-                              $scope.newAlgorithm.author = data.authors;
-                            }
-
-                            if (data.description === undefined || !data.description) {
-                              $scope.newAlgorithm.description = 'No description';
-                            } else {
-                              $scope.newAlgorithm.description = data.description;
-                            }
-
-                          })
-                        }
-
-                        // *** Export functions ***
-
-                        $scope.saveNewAlgorithm = saveNewAlgorithm;
-                        $scope.algorithmFileChanged = algorithmFileChanged;
-
-                        // *** Function Calls ***
-
-                        loadAvailableAlgorithms();
-
-                      }]
-                    })
-    }
+  function openNewAlgorithm() {
+    ngDialog.open({
+      template: require('./templates/new-algorithm.html'),
+      plain: true,
+      scope: $scope,
+      preCloseCallback: function() {
+        doneEditingAlgorithm()
+      },
+      controller: 'NewAlgorithmController',
+    })
+  }
 
     /**
      * Opens a dialog for editing or adding data sources.
      */
     function openNewDatasource() {
       ngDialog.open({
-                      template: require('./templates/new-datasource.html'),
-                      plain: true,
-                      scope: $scope,
-                      preCloseCallback: function () {
-                        doneEditingDatasources()
-                      },
-                      controller: ['$scope', function ($scope) {
-
-                        // *** Variable Definitions ***
-
-                        $scope.newDataSourceCategory = 'file';
-
-                        if ($scope.$parent.editFileInput) {
-                          $scope.file = $scope.$parent.editFileInput;
-                          if ($scope.file.fileName.lastIndexOf("inputData") != -1) {
-                            $scope.defaultFileText = $scope.file.fileName.substr($scope.file.fileName.lastIndexOf("inputData") + 10, $scope.file.fileName.length - 1);
-                          } else {
-                            $scope.defaultFileText = $scope.file.fileName;
-                          }
-                          $scope.newDataSourceCategory = 'file'
-                        } else {
-                          $scope.defaultFileText = '--choose a file--';
-                          $scope.file = {
-                            'separator': ',',
-                            'quoteChar': '\'',
-                            'escapeChar': '\\',
-                            'skipLines': '0',
-                            'strictQuotes': false,
-                            'ignoreLeadingWhiteSpace': true,
-                            'hasHeader': true,
-                            'skipDifferingLines': false,
-                            'nullValue': ''
-                          }
-                        }
-
-                        if ($scope.$parent.editDatabaseInput) {
-                          $scope.database = $scope.$parent.editDatabaseInput;
-                          $scope.newDataSourceCategory = 'database'
-                        } else {
-                          $scope.database = {}
-                        }
-
-                        if ($scope.$parent.editTableInput) {
-                          $scope.table = $scope.$parent.editTableInput;
-                          $scope.newDataSourceCategory = 'table';
-                          $scope.defaultDatabaseConnectionText = $scope.table.databaseConnection.name;
-                        } else {
-                          $scope.table = {};
-                          $scope.defaultDatabaseConnectionText = '--choose a database connection--';
-                        }
-
-                        $scope.files = [];
-                        $scope.databaseConnections = [];
-
-                        // *** Function Defintions ***
-
-                        // Sets the selected data source category (file input, table input, database connection)
-                        function selectDatasourceCategory(category) {
-                          $scope.newDataSourceCategory = category
-                        }
-
-                        // deletes directories with all files included in the datasource selection
-                        function deleteDirectories(inputFiles) {
-                          var fileList = [];
-                          var directoryPaths = [];
-
-                          inputFiles.forEach( function(file) {
-                            // add paths with no file ending to list
-                            if (file.indexOf(".") == -1) {
-                              directoryPaths.push(file);
-                            } else {
-                              fileList.push(file);
-                            }
-                          });
-
-                          fileList.forEach( function(file) {
-                            var subDir = file.substr(0, file.lastIndexOf(fileSep));
-                            if (directoryPaths.indexOf(subDir) != -1) {
-                              directoryPaths.splice(directoryPaths.indexOf(subDir), 1);
-                            }
-                          });
-
-                          return directoryPaths;
-                        }
-
-                        // Loads the available files on disk
-                        function loadAvailableFiles() {
-                          $scope.AvailableInputFiles.get(function (result) {
-                            var updatedResult = result.map(function(f) {if (f.lastIndexOf("inputData") != - 1) {return f.substr(f.lastIndexOf("inputData") + 10, f.length - 1)} else {return f}});
-                            $scope.$parent.datasources.forEach(function (category) {
-                              if (category.name === 'File Input') {
-                                category.datasource.forEach(function (file) {
-                                  if (file.fileName.lastIndexOf("inputData") != -1) {
-                                    var index = updatedResult.indexOf(file.fileName.substr(file.fileName.lastIndexOf("inputData") + 10, file.fileName.length - 1));
-                                  } else {
-                                    var index = updatedResult.indexOf(file.fileName);
-                                  }
-                                  if (index !== -1) {
-                                    result.splice(index, 1);
-                                    updatedResult.splice(index, 1);
-                                  }
-                                })
-                              }
-
-                              var directoryPaths = deleteDirectories(updatedResult);
-                              directoryPaths.forEach( function(dir) {
-                                var index = updatedResult.indexOf(dir);
-                                if (index !== -1) {
-                                  result.splice(index, 1);
-                                  updatedResult.splice(index, 1);
-                                }
-                              });
-                            });
-
-                            result.forEach(function (file) {
-                              $scope.files.push({
-                                                  fileName: file,
-                                                  shortFileName: file.substr(file.lastIndexOf("inputData") + 10, file.length - 1)
-                                                })
-                            });
-                            if ($scope.$parent.editFileInput) {
-                              $scope.files.push({
-                                                  fileName: $scope.file.fileName,
-                                                  shortFileName: $scope.file.fileName.substr($scope.file.fileName.lastIndexOf("inputData") + 10, $scope.file.fileName.length - 1)
-                                                });
-                            }
-                            $scope.files.sort(function (a, b) {
-                              return a.shortFileName.localeCompare(b.shortFileName);
-                            });
-                          })
-                        }
-
-                        // Loads the available database connections
-                        function loadAvailableDatabases() {
-                          $scope.$parent.datasources.forEach(function (category) {
-                            if (category.name === 'Database Connection') {
-                              $scope.databaseConnections = category.datasource
-                            }
-                          });
-                        }
-
-
-                        // Save or update a file input
-                        function saveNewFileInput(file) {
-                          resetAlgorithm();
-                          if (!file.fileName) {
-                            openError('You have to select a file!');
-                            return;
-                          }
-                          startSpin();
-                          var obj = {
-                            'type': 'fileInput',
-                            'id': file.id || 1,
-                            'name': file.fileName || '',
-                            'fileName': file.fileName || '',
-                            'separator': file.separator || '',
-                            'quoteChar': file.quoteChar || '',
-                            'escapeChar': file.escapeChar || '',
-                            'skipLines': file.skipLines || '0',
-                            'strictQuotes': file.strictQuotes || false,
-                            'ignoreLeadingWhiteSpace': file.ignoreLeadingWhiteSpace || false,
-                            'hasHeader': file.hasHeader || false,
-                            'skipDifferingLines': file.skipDifferingLines || false,
-                            'comment': file.comment || '',
-                            'nullValue': file.nullValue || ''
-                          };
-                          if ($scope.$parent.editFileInput) {
-                            $scope.$parent.InputStore.updateFileInput(obj, function () {
-                              initializeDatasources();
-                              ngDialog.closeAll();
-                              stopSpin();
-                            }, function (errorMessage) {
-                              openError('An error occurred when updating this datasource: ' + errorMessage.data);
-                              stopSpin();
-                            })
-                          } else {
-                            $scope.AvailableInputFiles.getDirectory(obj, function () {
-                              initializeDatasources();
-                              ngDialog.closeAll();
-                              stopSpin();
-                            }, function (errorMessage) {
-                              openError('An error occurred when updating this datasource: ' + errorMessage.data);
-                              stopSpin();
-                            })
-                          }
-                        }
-
-                        // Save or update a database connection
-                        function saveDatabaseInput(database) {
-                          resetAlgorithm();
-                          if (!database.url) {
-                            openError('You have to insert a database url!');
-                            return;
-                          }
-                          if (!database.password) {
-                            openError('You have to insert a password!');
-                            return;
-                          }
-                          if (!database.username) {
-                            openError('You have to insert a username!');
-                            return;
-                          }
-                          if (!database.system) {
-                            openError('You have to select a system!');
-                            return;
-                          }
-                          startSpin();
-                          var obj = {
-                            'type': 'databaseConnection',
-                            'id': database.id || 1,
-                            'name': database.url + '; ' + database.userName + '; ' + database.system || '',
-                            'url': database.url || '',
-                            'username': database.username || '',
-                            'password': database.password || '',
-                            'system': database.system || '',
-                            'comment': database.comment || ''
-                          };
-                          if ($scope.$parent.editDatabaseInput) {
-                            $scope.$parent.InputStore.updateDatabaseConnection(obj,
-                                                                               function () {
-                                                                                 initializeDatasources();
-                                                                                 ngDialog.closeAll();
-                                                                                 stopSpin();
-                                                                               },
-                                                                               function (errorMessage) {
-                                                                                 openError('An error occurred when updating this datasource: ' + errorMessage.data);
-                                                                                 stopSpin();
-                                                                               })
-                          } else {
-                            $scope.$parent.InputStore.newDatabaseConnection(obj,
-                                                                            function () {
-                                                                              initializeDatasources();
-                                                                              ngDialog.closeAll();
-                                                                              stopSpin();
-                                                                            },
-                                                                            function (errorMessage) {
-                                                                              openError('An error occurred when saving this datasource: ' + errorMessage.data);
-                                                                              stopSpin();
-                                                                            })
-                          }
-                        }
-
-                        // Save or update a table input
-                        function saveTableInput(table) {
-                          resetAlgorithm();
-                          table.databaseConnection = JSON.parse(table.databaseConnection);
-                          if (table.databaseConnection === undefined) {
-                            openError('You have to select a database connection!');
-                            return;
-                          }
-
-                          if (!table.tableName) {
-                            openError('You have to insert a table name!');
-                            return;
-                          }
-                          startSpin();
-                          var obj = {
-                            'type': 'tableInput',
-                            'id': table.id || 1,
-                            'name': table.tableName + '; ' + table.databaseConnection.name || '',
-                            'tableName': table.tableName || '',
-                            'databaseConnection': {
-                              'type': 'databaseConnection',
-                              'id': table.databaseConnection.id,
-                              'name': table.databaseConnection.name,
-                              'url': table.databaseConnection.url,
-                              'username': table.databaseConnection.username,
-                              'password': table.databaseConnection.password,
-                              'system': table.databaseConnection.system,
-                              'comment': table.databaseConnection.comment
-                            },
-                            'comment': table.comment || ''
-                          };
-                          if ($scope.$parent.editTableInput) {
-                            $scope.$parent.InputStore.updateTableInput(obj,
-                                                                       function () {
-                                                                         initializeDatasources();
-                                                                         stopSpin();
-                                                                         ngDialog.closeAll()
-                                                                       }, function (errorMessage) {
-                                openError('An error occurred when updating this datasource: ' + errorMessage.data);
-                                stopSpin();
-                              })
-                          } else {
-                            $scope.$parent.InputStore.newTableInput(obj, function () {
-                              initializeDatasources();
-                              ngDialog.closeAll();
-                              stopSpin();
-                            }, function (errorMessage) {
-                              openError('An error occurred when saving this datasource: ' + errorMessage.data);
-                              stopSpin();
-                            })
-                          }
-                        }
-
-                        // *** Export Functions ***
-
-                        $scope.selectDatasourceCategory = selectDatasourceCategory;
-                        $scope.saveNewFileInput = saveNewFileInput;
-                        $scope.saveDatabaseInput = saveDatabaseInput;
-                        $scope.saveTableInput = saveTableInput;
-
-                        // *** Function Calls ***
-
-                        loadAvailableFiles();
-                        loadAvailableDatabases();
-
-                      }]
-                    })
+        template: require('./templates/new-datasource.html'),
+        plain: true,
+        scope: $scope,
+        preCloseCallback: function() {
+          doneEditingDatasources()
+        },
+        controller: 'NewDatasourceController'
+      })
     }
 
     // ***
@@ -825,30 +405,6 @@ export default function ($scope,
       };
 
       notificationInformation();
-      /*
-      ngDialog.openConfirm({
-                             /!*jshint multistr: true *!/
-                             template: '\
-                <h3>Execution running</h3>\
-                <timer interval="1000">Elapsed time: {{days}} days, {{hours}} hour{{hoursS}}, {{minutes}} minute{{minutesS}}, {{seconds}} second{{secondsS}}.</timer>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-warning" ng-click="cancelExecution()">Cancel Execution</button>\
-                </div>',
-                             plain: true,
-                             scope: $scope,
-                             showClose: false,
-                             closeByEscape: false,
-                             closeByDocument: false,
-                             controller: ['$scope', function ($scope) {
-                               $scope.cancelExecution = function () {
-                                 $scope.$parent.cancelFunction();
-                                 var params = {identifier: $scope.$parent.payload.executionIdentifier};
-                                 $scope.$parent.StopExecution.stop(params, function () {
-                                   ngDialog.closeAll()
-                                 })
-                               }
-                             }]
-                           });*/
       AlgorithmExecution.run({}, payload, function (result) {
         var url = {
           ind:  result.algorithm.ind,
@@ -1624,11 +1180,12 @@ export default function ($scope,
     $scope.openAlgorithmHelp = openAlgorithmHelp;
 
     //Exports for dialogs
-    $scope.InputStore = InputStore;
-    $scope.AvailableAlgorithmFiles = AvailableAlgorithmFiles;
-    $scope.AvailableInputFiles = AvailableInputFiles;
     $scope.doneEditingDatasources = doneEditingDatasources;
-
+    $scope.openError = openError;
+    $scope.startSpin = startSpin;
+    $scope.stopSpin = stopSpin;
+    $scope.initializeAlgorithmList = initializeAlgorithmList;
+    $scope.initializeDatasources = initializeDatasources;
 
     // ** FUNCTION CALLS **
     // ********************
