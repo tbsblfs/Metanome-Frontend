@@ -17,7 +17,7 @@
   </p>
 </md-card>
 <md-card
-  ng-repeat="resultType in [uniqueColumnCombination, functionalDependency, inclusionDependency, basicStatistic, denialConstraint, conditionalUniqueColumnCombination, orderDependency, multivaluedDependency]"
+  ng-repeat="resultType in resultTypes"
   ng-if="(cached || file)  && resultType.count > 0">
   <md-table-toolbar>
     <h2 class="md-title">{{resultType.params.type}}
@@ -67,7 +67,7 @@
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card
-  ng-repeat="resultType in [uniqueColumnCombination, functionalDependency, inclusionDependency, basicStatistic, denialConstraint, conditionalUniqueColumnCombination, orderDependency, multivaluedDependency]"
+  ng-repeat="resultType in resultTypes"
   ng-if="count && resultType.count > 0">
   <md-card-content>
     <h2 class="md-title">{{resultType.params.type}}</h2>
@@ -75,9 +75,7 @@
   </md-card-content>
 </md-card>
 <md-card
-  ng-if="uniqueColumnCombination.count == 0 && orderDependency.count == 0 &&
-  conditionalUniqueColumnCombination.count == 0 && basicStatistic.count == 0 && functionalDependency.count == 0 &&
-  inclusionDependency.count == 0 && multivaluedDependency.count == 0 && denialConstraint.count == 0 && loading == false">
+  ng-if="isEmptyResult()">
   <h3 style="margin: 20px" class="md-title">No results found!</h3>
 </md-card>
 <span us-spinner="{radius:50, width:20, length: 26}" spinner-key="spinner-2"></span>

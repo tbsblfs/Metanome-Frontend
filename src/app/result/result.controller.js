@@ -7,15 +7,13 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
 
   // ** VARIABLE DEFINITIONS **
   // **************************
-
-  $scope.id = $stateParams.resultId;
   $scope.extended = ($stateParams.extended === 'true');
   $scope.cached = ($stateParams.cached === 'true');
   $scope.file = ($stateParams.file === 'true');
   $scope.count = ($stateParams.count === 'true');
-  $scope.load = ($stateParams.load === 'true');
 
   $scope.extendedState = Object.assign({}, $stateParams, { extended: true});
+  $scope.isEmptyResult = () => $scope.resultTypes.every(s => s.count == 0) && $scope.loading == false;
 
   $scope.paginationValues = [10, 20, 30, 40, 50];
 
@@ -42,9 +40,10 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
     return deferred.promise;
   }
 
-  Object.keys(resultTypes).forEach(function (key) {
-    $scope[resultTypes[key].short] = ($stateParams[resultTypes[key].short] === 'true');
-    $scope[key] = {
+  $scope.resultTypes = [];
+  Object.values(resultTypes).forEach(function (value) {
+    const state = {
+      active: ($stateParams[value.short] === 'true'),
       count: 0,
       data: [],
       query: {
@@ -56,15 +55,16 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
       params: {
         from: 0,
         to: defaultCacheSize,
-        type: resultTypes[key].type,
-        sort: resultTypes[key].sort
+        type: value.type,
+        sort: value.sort
       },
-      handler: resultTypes[key].resultHandler,
-      columnNames: resultTypes[key].columnNames ? [...resultTypes[key].columnNames] : [],
-      extendedColumnNames: resultTypes[key].extendedColumnNames,
-      visualization: resultTypes[key].visualization,
+      handler: value.resultHandler,
+      columnNames: value.columnNames ? [...value.columnNames] : [],
+      extendedColumnNames: value.extendedColumnNames,
+      visualization: value.visualization,
     };
-    $scope[key].pageChange = onPageChange($scope[key]);
+    state.pageChange = onPageChange(state);
+    $scope.resultTypes.push(state);
   });
 
   /**
@@ -81,9 +81,8 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Loads the results depending on the requested result types.
    */
   function init() {
-    Object.keys(resultTypes).forEach(function (key) {
-      if ($scope.file || $scope[resultTypes[key].short]) {
-        const scopeObj = $scope[key];
+    $scope.resultTypes.forEach(function (scopeObj) {
+      if ($scope.file || scopeObj.active) {
         CountResults.get(scopeObj.params.type).then(function(response) {
           var count = response.data;
 
@@ -102,7 +101,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Loads the file with a specific id from the backend.
    */
   function loadDetailsForFile() {
-    File.get({id: $scope.id}, function (result) {
+    File.get({id: $stateParams.resultId}, function (result) {
       $scope.file = result;
       $scope.file.shortFileName = $scope.file.fileName.replace(/^.*[\\\/]/, '');
     })
@@ -121,7 +120,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Load the execution with a specific id from the backend.
    */
   function loadDetailsForExecution() {
-    Execution.get({id: $scope.id}, function (result) {
+    Execution.get({id: $stateParams.resultId}, function (result) {
       $scope.execution = result;
       var duration = result.end - result.begin; // milliseconds
 
@@ -193,7 +192,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
   if ($scope.extended) {
     startSpin();
     $scope.loading = true;
-    LoadResults.load({id: $scope.id, notDetailed: false}, function () {
+    LoadResults.load({id: $stateParams.resultId, notDetailed: false}, function () {
       init();
       loadDetailsForExecution();
       $scope.loading = false;
@@ -208,7 +207,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
     startSpin();
     $scope.loading = true;
     loadDetailsForFile();
-    LoadResults.file({id: $scope.id, notDetailed: true}, function () {
+    LoadResults.file({id: $stateParams.resultId, notDetailed: true}, function () {
       init();
       $scope.loading = false;
       stopSpin();
@@ -218,10 +217,10 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
       openError('Results could not be loaded: ' + errorMessage.data);
     });
     // load result (coming from history)
-  } else if ($scope.load) {
+  } else if ($stateParams.load === 'true') {
     startSpin();
     $scope.loading = true;
-    LoadResults.load({id: $scope.id, notDetailed: true}, function () {
+    LoadResults.load({id: $stateParams.resultId, notDetailed: true}, function () {
       init();
       loadDetailsForExecution();
       $scope.loading = false;
