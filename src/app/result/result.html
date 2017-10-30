@@ -66,52 +66,12 @@
     md-on-paginate="resultType.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
-<md-card ng-if="count && uniqueColumnCombination.count > 0">
+<md-card
+  ng-repeat="resultType in [uniqueColumnCombination, functionalDependency, inclusionDependency, basicStatistic, denialConstraint, conditionalUniqueColumnCombination, orderDependency, multivaluedDependency]"
+  ng-if="count && resultType.count > 0">
   <md-card-content>
-    <h2 class="md-title">Unique Column Combination</h2>
-    {{uniqueColumnCombination.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && functionalDependency.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Functional Dependency</h2>
-    {{functionalDependency.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && inclusionDependency.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Inclusion Dependency</h2>
-    {{inclusionDependency.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && orderDependency.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Order Dependency</h2>
-    {{orderDependency.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && multivaluedDependency.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Multivalued Dependency</h2>
-    {{multivaluedDependency.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && conditionalUniqueColumnCombination.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Conditional Unique Column Combination</h2>
-    {{conditionalUniqueColumnCombination.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && basicStatistic.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Basic Statistic</h2>
-    {{basicStatistic.count}}
-  </md-card-content>
-</md-card>
-<md-card ng-if="count && denialConstraint.count > 0">
-  <md-card-content>
-    <h2 class="md-title">Denial Constraint</h2>
-    {{denialConstraint.count}}
+    <h2 class="md-title">{{resultType.params.type}}</h2>
+    {{resultType.count}}
   </md-card-content>
 </md-card>
 <md-card
