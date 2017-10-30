@@ -21,7 +21,7 @@
     <h2 class="md-title">Unique Column Combination
       <md-button
         ng-if="extended"
-        ng-click="openUCCVisualization()"
+        ng-click="openVisualization('UCC')"
         style="font-size: 12px; margin-top: -2px"
         md-no-ink
         class="md-primary">Show visualization
@@ -56,13 +56,13 @@
     md-limit="uniqueColumnCombination.query.limit"
     md-page="uniqueColumnCombination.query.page"
     md-total="{{uniqueColumnCombination.count}}"
-    md-on-paginate="onPageChangeUCC"
+    md-on-paginate="uniqueColumnCombination.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && functionalDependency.count > 0">
   <md-table-toolbar>
     <h2 class="md-title">Functional Dependency
-      <md-button ng-if="extended" ng-click="openFDVisualization()" style="font-size: 12px;" md-no-ink class="md-primary">Show visualization
+      <md-button ng-if="extended" ng-click="openVisualization('FD')" style="font-size: 12px;" md-no-ink class="md-primary">Show visualization
       </md-button>
     </h2>
   </md-table-toolbar>
@@ -112,7 +112,7 @@
     md-limit="functionalDependency.query.limit"
     md-page="functionalDependency.query.page"
     md-total="{{functionalDependency.count}}"
-    md-on-paginate="onPageChangeFD"
+    md-on-paginate="functionalDependency.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && inclusionDependency.count > 0">
@@ -153,7 +153,7 @@
     md-limit="inclusionDependency.query.limit"
     md-page="inclusionDependency.query.page"
     md-total="{{inclusionDependency.count}}"
-    md-on-paginate="onPageChangeIND"
+    md-on-paginate="inclusionDependency.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && basicStatistic.count > 0">
@@ -167,7 +167,7 @@
           <th md-column md-order-by="columnCombination" name="Column Combination">Column Combination</th>
           <th
             md-column
-            ng-repeat-start="column in basicStatisticColumnNames"
+            ng-repeat-start="column in basicStatistic.columnNames"
             md-order-by="{{column.order}}"
             name="{{column.name}}"
             ng-repeat-end>{{column.name}}</th>
@@ -181,7 +181,7 @@
           md-row
           ng-repeat="item in basicStatistic.data | orderBy: basicStatistic.query.order | limitTo: basicStatistic.query.limit: (basicStatistic.query.page - 1) * basicStatistic.query.limit">
           <td md-cell>{{item.columnCombination}}</td>
-          <td md-cell ng-repeat-start="column in basicStatisticColumnNames" ng-repeat-end>{{item[column.order]}}</td>
+          <td md-cell ng-repeat-start="column in basicStatistic.columnNames" ng-repeat-end>{{item[column.order] || '-'}}</td>
           <td md-cell ng-if="extended">{{item.columnRatio}}</td>
           <td md-cell ng-if="extended">{{item.occurrenceRatio}}</td>
           <td md-cell ng-if="extended">{{item.uniquenessRatio}}</td>
@@ -193,7 +193,7 @@
     md-limit="basicStatistic.query.limit"
     md-page="basicStatistic.query.page"
     md-total="{{basicStatistic.count}}"
-    md-on-paginate="onPageChangeBS"
+    md-on-paginate="basicStatistic.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && denialConstraint.count > 0">
@@ -222,7 +222,7 @@
     md-limit="denialConstraint.query.limit"
     md-page="denialConstraint.query.page"
     md-total="{{denialConstraint.count}}"
-    md-on-paginate="onPageChangeDC"
+    md-on-paginate="denialConstraint.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && conditionalUniqueColumnCombination.count > 0">
@@ -259,7 +259,7 @@
     md-limit="conditionalUniqueColumnCombination.query.limit"
     md-page="conditionalUniqueColumnCombination.query.page"
     md-total="{{conditionalUniqueColumnCombination.count}}"
-    md-on-paginate="onPageChangeCUCC"
+    md-on-paginate="conditionalUniqueColumnCombination.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file) && orderDependency.count > 0">
@@ -306,7 +306,7 @@
     md-limit="orderDependency.query.limit"
     md-page="orderDependency.query.page"
     md-total="{{orderDependency.count}}"
-    md-on-paginate="onPageChangeOD"
+    md-on-paginate="orderDependency.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="(cached || file)  && multivaluedDependency.count > 0">
@@ -357,7 +357,7 @@
     md-limit="multivaluedDependency.query.limit"
     md-page="multivaluedDependency.query.page"
     md-total="{{multivaluedDependency.count}}"
-    md-on-paginate="onPageChangeMVD"
+    md-on-paginate="multivaluedDependency.pageChange"
     md-options=paginationValues></md-table-pagination>
 </md-card>
 <md-card ng-if="count && uniqueColumnCombination.count > 0">

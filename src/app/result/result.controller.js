@@ -1,5 +1,7 @@
 'use strict';
 
+import resultTypes from './types';
+
 export default function ($scope, Executions, Results, $q, usSpinnerService,
                                        $timeout, $stateParams, LoadResults, CountResults, Execution, File,
                                        ngDialog, $http, ENV_VARS) {
@@ -12,58 +14,35 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
   $scope.cached = ($stateParams.cached === 'true');
   $scope.file = ($stateParams.file === 'true');
   $scope.count = ($stateParams.count === 'true');
-  $scope.fd = ($stateParams.fd === 'true');
-  $scope.ind = ($stateParams.ind === 'true');
-  $scope.ucc = ($stateParams.ucc === 'true');
-  $scope.cucc = ($stateParams.cucc === 'true');
-  $scope.od = ($stateParams.od === 'true');
-  $scope.mvd = ($stateParams.mvd === 'true');
-  $scope.basicStat = ($stateParams.basicStat === 'true');
-  $scope.dc = ($stateParams.dc === 'true');
   $scope.load = ($stateParams.load === 'true');
-
-  $scope.basicStatisticColumnNames = [];
 
   $scope.paginationValues = [10, 20, 30, 40, 50];
 
   var defaultCacheSize = 50;
 
-  const customizations = {
-    uniqueColumnCombination: {
-      type: 'Unique Column Combination',
-      sort: 'Column Combination',
-    },
-    functionalDependency:  {
-      type: 'Functional Dependency',
-      sort: 'Determinant',
-    },
-    basicStatistic: {
-      type: 'Basic Statistic',
-      sort: 'Column Combination',
-    },
-    denialConstraint: {
-        type: 'Denial Constraint',
-        sort: 'Predicates',
-    },
-    inclusionDependency: {
-      type: 'Inclusion Dependency',
-      sort: 'Dependant',
-    },
-    conditionalUniqueColumnCombination: {
-      type: 'Conditional Unique Column Combination',
-      sort: 'Dependant',
-    },
-    orderDependency: {
-      type: 'Order Dependency',
-      sort: 'LHS',
-    },
-    multivaluedDependency: {
-      type: 'Multivalued Dependency',
-      sort: 'Determinant',
+  /**
+   * Updates the result according to the selected limit and page.
+   * @param page the current page
+   * @param limit the current limit
+   * @returns {*}
+   */
+  const onPageChange = (scopeObj) => (page, limit) => {
+    var deferred = $q.defer();
+    if (scopeObj.params.to < scopeObj.count) {
+      scopeObj.params.from += scopeObj.params.to + 1;
+      scopeObj.params.to += Math.max(limit, scopeObj.count);
+      loadData(scopeObj);
+      $timeout(function () {
+        deferred.resolve();
+      }, 500);
+    } else {
+      deferred.resolve()
     }
+    return deferred.promise;
   }
 
-  Object.keys(customizations).forEach(function (key) {
+  Object.keys(resultTypes).forEach(function (key) {
+    $scope[resultTypes[key].test] = ($stateParams[resultTypes[key].test] === 'true');
     $scope[key] = {
       count: 0,
       data: [],
@@ -75,337 +54,22 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
       selected: [],
       params: {
         from: 0,
-        to: defaultCacheSize
-      }
+        to: defaultCacheSize,
+        type: resultTypes[key].type,
+        sort: resultTypes[key].sort
+      },
+      handler: resultTypes[key].resultHandler,
     };
-    $scope[key].params.type = customizations[key].type;
-    $scope[key].params.sort = customizations[key].sort;
+    $scope[key].pageChange = onPageChange($scope[key]);
   });
 
-  // ** FUNCTION DEFINITIONS **
-  // **************************
-
   /**
-   * Removes duplicates from the given array.
-   * @param arr the array
-   * @returns {Array} the array without duplicates
+   * Loads the result from the backend.
    */
-  function removeDuplicates(arr){
-    var retArray = [];
-    for (var a = arr.length - 1; a >= 0; a--) {
-      for (var b = arr.length - 1; b >= 0; b--) {
-        if(arr[a] === arr[b] && a !== b){
-          delete arr[b];
-        }
-      }
-      if(arr[a] !== undefined) {
-        retArray.push(arr[a]);
-      }
-    }
-    return retArray;
-  }
-
-
-  // ** Getting the result from the backend **
-
-  /**
-   * Loads the result for unique column combinations from the backend.
-   */
-  function loadUniqueColumnCombination() {
-    Results.get($scope.uniqueColumnCombination.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        result.result.columnCombination.columnIdentifiers.forEach(function (combination) {
-          combinations.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        rows.push({
-          columnCombination: '[' + combinations.join(',\n ') + ']',
-          columnRatio: result.columnRatio,
-          occurrenceRatio: result.occurrenceRatio,
-          uniquenessRatio: result.uniquenessRatio,
-          randomness: result.randomness
-        })
-      });
-      $scope.uniqueColumnCombination.data = $scope.uniqueColumnCombination.data.concat(rows)
-    })
-  }
-
-  /**
-   * Loads the result for conditional unique column combinations from the backend.
-   */
-  function loadConditionalUniqueColumnCombination() {
-    Results.get($scope.conditionalUniqueColumnCombination.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        result.result.columnCombination.columnIdentifiers.forEach(function (combination) {
-          combinations.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        rows.push({
-          columnCombination: '[' + combinations.join(',\n ') + ']',
-          condition: result.result.condition.columnIdentifier.tableIdentifier + '.' + result.result.condition.columnIdentifier.columnIdentifier + (result.result.condition.negated ? ' != ' : ' = ') + result.result.condition.columnValue,
-          coverage: result.result.condition.coverage,
-          columnRatio: result.columnRatio,
-          occurrenceRatio: result.occurrenceRatio,
-          uniquenessRatio: result.uniquenessRatio
-        })
-      });
-      $scope.conditionalUniqueColumnCombination.data = $scope.conditionalUniqueColumnCombination.data.concat(rows)
-    })
-  }
-
-  /**
-   * Loads the result for functional dependencies from the backend.
-   */
-  function loadFunctionalDependency() {
-    Results.get($scope.functionalDependency.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var determinant = [];
-        result.result.determinant.columnIdentifiers.forEach(function (combination) {
-          if (combination.tableIdentifier && combination.columnIdentifier) {
-            determinant.push(combination.tableIdentifier + '.' + combination.columnIdentifier);
-          } else {
-            determinant.push('');
-          }
-        });
-        var extendedDependant = [];
-        if (result.extendedDependant) {
-          result.extendedDependant.columnIdentifiers.forEach(function (combination) {
-            if (combination.tableIdentifier && combination.columnIdentifier) {
-              extendedDependant.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-            } else {
-              determinant.push('');
-            }
-          })
-        }
-        var dependant = '';
-        if (result.dependant.tableIdentifier && result.dependant.columnIdentifier) {
-          dependant = result.dependant.tableIdentifier + '.' + result.dependant.columnIdentifier;
-        }
-
-        rows.push({
-          determinant: '[' + determinant.join(',\n ') + ']',
-          dependant: dependant,
-          extendedDependant: '[' + extendedDependant.join(',\n ') + ']',
-          determinantColumnRatio: result.determinantColumnRatio,
-          dependantColumnRatio: result.dependantColumnRatio,
-          determinantOccurrenceRatio: result.determinantOccurrenceRatio,
-          dependantOccurrenceRatio: result.dependantOccurrenceRatio,
-          generalCoverage: result.generalCoverage,
-          determinantUniquenessRatio: result.determinantUniquenessRatio,
-          dependantUniquenessRatio: result.dependantUniquenessRatio,
-          pollution: result.pollution,
-          pollutionColumn: result.pollutionColumn,
-          informationGainCell: result.informationGainCells,
-          informationGainByte: result.informationGainBytes
-        })
-      });
-      $scope.functionalDependency.data = $scope.functionalDependency.data.concat(rows)
-    })
-  }
-
-  /**
-   * Loads the result for basic statistics from the backend.
-   */
-  function loadBasicStatistic() {
-    Results.get($scope.basicStatistic.params, function (res) {
-      // getting all column names
-      var columnNames = [];
-      res.forEach(function (result) {
-        for (var columnName in result.statisticMap) {
-          columnNames.push(columnName)
-        }
-      });
-      // remove duplicates in column names
-      columnNames = removeDuplicates(columnNames);
-      columnNames.forEach(function (name) {
-        $scope.basicStatisticColumnNames.push({
-          'name': name,
-          'order': name.replace(/\s/g, '_')
-        })
-      });
-
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        result.result.columnCombination.columnIdentifiers.forEach(function (combination) {
-          combinations.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        var entry = {
-          columnCombination: '[' + combinations.join(',\n ') + ']',
-          columnRatio: result.columnRatio,
-          occurrenceRatio: result.occurrenceRatio,
-          uniquenessRatio: result.uniquenessRatio
-        };
-        $scope.basicStatisticColumnNames.forEach(function(column) {
-          if (column.name in result.result.statisticMap) {
-            entry[column.order] = result.result.statisticMap[column.name].value;
-          } else {
-            entry[column.order] = '-';
-          }
-        });
-        rows.push(entry)
-      });
-      $scope.basicStatistic.data = $scope.basicStatistic.data.concat(rows)
-    })
-  }
-
-  var predicateOperators = {
-    "EQUAL":"=",
-    "UNEQUAL":"≠",
-    "GREATER":">",
-    "LESS":"<",
-    "GREATER_EQUAL":"≥",
-    "LESS_EQUAL":"≤",
-  }
-
-  /**
-   * Loads the result for basic statistics from the backend.
-   */
-  function loadDenialConstraint() {
-    Results.get($scope.denialConstraint.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        var tableNames = [];
-        result.result.predicates.forEach(function (predicate) {
-          var operator = predicateOperators[predicate.op] || predicate.op;
-          if(predicate.type === "de.metanome.algorithm_integration.PredicateConstant") {
-            tableNames[predicate.index1] = predicate.column1.tableIdentifier;
-            combinations.push('t' + predicate.index1 + '.' + predicate.column1.columnIdentifier +
-             operator + predicate.constant);
-          } else if (predicate.type === "de.metanome.algorithm_integration.PredicateVariable") {
-            tableNames[predicate.index1] = predicate.column1.tableIdentifier;
-            tableNames[predicate.index2] = predicate.column2.tableIdentifier;
-            combinations.push('t' + predicate.index1 + '.' + predicate.column1.columnIdentifier +
-             operator + 't' + predicate.index2 + '.' + predicate.column2.columnIdentifier);
-          }
-        });
-        var tuples = [];
-        for (var index in tableNames) {
-          if (tableNames.hasOwnProperty(index)) {
-            tuples.push('t' + index + '∈' + tableNames[index]);
-          }
-        }
-
-        var entry = {
-          predicates: '∀' + tuples.join(',') + ':\n¬[' + combinations.join('∧\n ') + ']',
-          size: combinations.length,
-        };
-        rows.push(entry);
-      });
-      $scope.denialConstraint.data = $scope.denialConstraint.data.concat(rows)
-    })
-  }
-
-  /**
-   * Loads the result for inclusion dependencies from the backend.
-   */
-  function loadInclusionDependency() {
-    Results.get($scope.inclusionDependency.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        result.result.dependant.columnIdentifiers.forEach(function (combination) {
-          combinations.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        var referenced = [];
-        result.result.referenced.columnIdentifiers.forEach(function (combination) {
-          referenced.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        rows.push({
-          dependant: '[' + combinations.join(',\n ') + ']',
-          referenced: '[' + referenced.join(',\n ') + ']',
-          dependantColumnRatio: result.dependantColumnRatio,
-          referencedColumnRatio: result.referencedColumnRatio,
-          dependantOccurrenceRatio: result.dependantOccurrenceRatio,
-          referencedOccurrenceRatio: result.referencedOccurrenceRatio,
-          generalCoverage: result.generalCoverage,
-          dependantUniquenessRatio: result.dependantUniquenessRatio,
-          referencedUniquenessRatio: result.referencedUniquenessRatio
-        })
-      });
-      $scope.inclusionDependency.data = $scope.inclusionDependency.data.concat(rows)
-    })
-  }
-
-  /**
-   * Loads the result for order dependencies from the backend.
-   */
-  function loadOrderDependency() {
-    Results.get($scope.orderDependency.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var combinations = [];
-        result.result.lhs.columnIdentifiers.forEach(function (combination) {
-          combinations.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        var referenced = [];
-        result.result.rhs.columnIdentifiers.forEach(function (combination) {
-          referenced.push(combination.tableIdentifier + '.' + combination.columnIdentifier)
-        });
-        var ordertype = 'Lexicographical';
-        if (result.orderType === 'POINTWISE') {
-          ordertype = 'Pointwise'
-        }
-        var comparisonOperator = '<';
-        if (result.comparisonOperator === 'SMALLER_EQUAL') {
-          comparisonOperator = '<='
-        }
-
-        rows.push({
-          LHS: '[' + combinations.join(',\n ') + ']',
-          RHS: '[' + referenced.join(',\n ') + ']',
-          ComparisonOperator: comparisonOperator,
-          OrderType: ordertype,
-          LHSColumnRatio: result.lhsColumnRatio,
-          RHSColumnRatio: result.rhsColumnRatio,
-          GeneralCoverage: result.generalCoverage,
-          LHSOccurrenceRatio: result.lhsOccurrenceRatio,
-          RHSOccurrenceRatio: result.rhsOccurrenceRatio,
-          LHSUniquenessRatio: result.lhsUniquenessRatio,
-          RHSUniquenessRatio: result.rhsUniquenessRatio
-        })
-      });
-      $scope.orderDependency.data = $scope.orderDependency.data.concat(rows)
-    })
-  }
-
-
-  /**
-   * Loads the result for multivalued dependencies from the backend.
-   */
-  function loadMultivaluedDependency() {
-    Results.get($scope.multivaluedDependency.params, function (res) {
-      var rows = [];
-      res.forEach(function (result) {
-        var determinants = [];
-        result.result.determinant.columnIdentifiers.forEach(function (determinant) {
-          determinants.push(determinant.tableIdentifier + '.' + determinant.columnIdentifier)
-        });
-        var dependants = [];
-        result.result.dependant.columnIdentifiers.forEach(function (dependant) {
-          dependants.push(dependant.tableIdentifier + '.' + dependant.columnIdentifier)
-        });
-        rows.push({
-          determinant: '[' + determinants.join(',\n ') + ']',
-          dependant: '[' + dependants.join(',\n ') + ']',
-          determinantColumnRatio: result.determinantColumnRatio,
-          dependantColumnRatio: result.dependantColumnRatio,
-          determinantOccurrenceRatio: result.determinantOccurrenceRatio,
-          dependantOccurrenceRatio: result.dependantOccurrenceRatio,
-          generalCoverage: result.generalCoverage,
-          determinantUniquenessRatio: result.determinantUniquenessRatio,
-          dependantUniquenessRatio: result.dependantUniquenessRatio,
-          pollution: result.pollution,
-          pollutionColumn: result.pollutionColumn,
-          informationGainCell: result.informationGainCells,
-          informationGainByte: result.informationGainBytes
-        })
-      });
-      $scope.multivaluedDependency.data = $scope.multivaluedDependency.data.concat(rows)
+  function loadData(scopeObj) {
+    Results.get(scopeObj.params, function (res) {
+      var rows = res.map(scopeObj.handler(scopeObj));
+      scopeObj.data = scopeObj.data.concat(rows);
     })
   }
 
@@ -413,102 +77,22 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
    * Loads the results depending on the requested result types.
    */
   function init() {
-    if ($scope.ucc || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.uniqueColumnCombination.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.uniqueColumnCombination.count = count;
-            if (!$scope.count) {
-              loadUniqueColumnCombination()
+    Object.keys(resultTypes).forEach(function (key) {
+      if ($scope.file || $scope[resultTypes[key].test]) {
+        const scopeObj = $scope[key];
+        $http.get(ENV_VARS.API + '/api/result-store/count/' + scopeObj.params.type).
+          then(function (response) {
+            var count = response.data;
+
+            if (count > 0) {
+              scopeObj.count = count;
+              if (!$scope.count) {
+                loadData(scopeObj);
+              }
             }
-          }
-        });
-    }
-    if ($scope.fd || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.functionalDependency.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.functionalDependency.count = count;
-            if (!$scope.count) {
-              loadFunctionalDependency()
-            }
-          }
-        });
-    }
-    if ($scope.basicStat || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.basicStatistic.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.basicStatistic.count = count;
-            if (!$scope.count) {
-              loadBasicStatistic()
-            }
-          }
-        });
-    }
-    if ($scope.dc || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.denialConstraint.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.denialConstraint.count = count;
-            if (!$scope.count) {
-              loadDenialConstraint()
-            }
-          }
-        });
-    }
-    if ($scope.ind || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.inclusionDependency.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.inclusionDependency.count = count;
-            if (!$scope.count) {
-              loadInclusionDependency()
-            }
-          }
-        });
-    }
-    if ($scope.cucc || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.conditionalUniqueColumnCombination.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.conditionalUniqueColumnCombination.count = count;
-            if (!$scope.count) {
-              loadConditionalUniqueColumnCombination()
-            }
-          }
-        });
-    }
-    if ($scope.od || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.orderDependency.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.orderDependency.count = count;
-            if (!$scope.count) {
-              loadOrderDependency()
-            }
-          }
-        })
-    }
-    if ($scope.mvd || $scope.file) {
-      $http.get(ENV_VARS.API + '/api/result-store/count/' + $scope.multivaluedDependency.params.type).
-        then(function (response) {
-          var count = response.data;
-          if (count > 0) {
-            $scope.multivaluedDependency.count = count;
-            if (!$scope.count) {
-              loadMultivaluedDependency()
-            }
-          }
-        })
+          });
       }
+    });
   }
 
   /**
@@ -555,10 +139,10 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
   }
 
   /**
-   * Open the visualizations for functional dependencies.
+   * Open the visualizations for result type
    */
-  function openFDVisualization() {
-    $scope.openVisualizationType = 'FD';
+  function openVisualization(type) {
+    $scope.openVisualizationType = type;
     ngDialog.open({
       template: require('./templates/visualization.html'),
       plain: true,
@@ -567,187 +151,17 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
   }
 
   /**
-   * Open the visualizations for unique column combinations
+   * Open a dialog which shows an error message.
+   * @param message the message
    */
-  function openUCCVisualization() {
-    $scope.openVisualizationType = 'UCC';
+  function openError(message) {
+    $scope.errorMessage = message;
     ngDialog.open({
-      template: require('./templates/visualization.html'),
+      template: require('./templates/error.html'),
       plain: true,
       scope: $scope
     })
   }
-
-  // ** Getting the result from the backend **
-
-  /**
-   * Updates the result for functional dependency according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeFD(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.functionalDependency.params.to < $scope.functionalDependency.count) {
-      $scope.functionalDependency.params.from += $scope.functionalDependency.params.to + 1;
-      $scope.functionalDependency.params.to += Math.max(limit, $scope.functionalDependency.count);
-      loadFunctionalDependency();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for unique column combinations according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeUCC(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.uniqueColumnCombination.params.to < $scope.uniqueColumnCombination.count) {
-      $scope.uniqueColumnCombination.params.from += $scope.uniqueColumnCombination.params.to + 1;
-      $scope.uniqueColumnCombination.params.to += Math.max(limit, $scope.uniqueColumnCombination.count);
-      loadUniqueColumnCombination();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for basic statistics according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeBS(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.basicStatistic.params.to < $scope.basicStatistic.count) {
-      $scope.basicStatistic.params.from += $scope.basicStatistic.params.to + 1;
-      $scope.basicStatistic.params.to += Math.max(limit, $scope.basicStatistic.count);
-      loadBasicStatistic();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for denial constraints according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeDC(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.denialConstraint.params.to < $scope.denialConstraint.count) {
-      $scope.denialConstraint.params.from += $scope.denialConstraint.params.to + 1;
-      $scope.denialConstraint.params.to += Math.max(limit, $scope.denialConstraint.count);
-      loadDenialConstraint();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for inclusion dependencies according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeIND(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.inclusionDependency.params.to < $scope.inclusionDependency.count) {
-      $scope.inclusionDependency.params.from += $scope.inclusionDependency.params.to + 1;
-      $scope.inclusionDependency.params.to += Math.max(limit, $scope.inclusionDependency.count);
-      loadInclusionDependency();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for conditional unique column combinations according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeCUCC(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.conditionalUniqueColumnCombination.params.to < $scope.conditionalUniqueColumnCombination.count) {
-      $scope.conditionalUniqueColumnCombination.params.from += $scope.conditionalUniqueColumnCombination.params.to + 1;
-      $scope.conditionalUniqueColumnCombination.params.to += Math.max(limit, $scope.conditionalUniqueColumnCombination.count);
-      loadConditionalUniqueColumnCombination();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for order dependencies according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeOD(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.orderDependency.params.to < $scope.orderDependency.count) {
-      $scope.orderDependency.params.from += $scope.orderDependency.params.to + 1;
-      $scope.orderDependency.params.to += Math.max(limit, $scope.orderDependency.count);
-      loadOrderDependency();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
-  /**
-   * Updates the result for multivalued dependencies according to the selected limit and page.
-   * @param page the current page
-   * @param limit the current limit
-   * @returns {*}
-   */
-  function onPageChangeMVD(page, limit) {
-    var deferred = $q.defer();
-    if ($scope.multivaluedDependency.params.to < $scope.multivaluedDependency.count) {
-      $scope.multivaluedDependency.params.from += $scope.multivaluedDependency.params.to + 1;
-      $scope.multivaluedDependency.params.to += Math.max(limit, $scope.multivaluedDependency.count);
-      loadMultivaluedDependency();
-      $timeout(function () {
-        deferred.resolve();
-      }, 500);
-    } else {
-      deferred.resolve()
-    }
-    return deferred.promise;
-  }
-
 
   /**
    * Starts the spinner
@@ -767,41 +181,10 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
     }, 10);
   }
 
-  /**
-   * Open a dialog which shows an error message.
-   * @param message the message
-   */
-  function openError(message) {
-    $scope.errorMessage = message;
-    ngDialog.open({
-      /*jshint multistr: true */
-      template: '\
-                <h3 style="color: #F44336">ERROR</h3>\
-                <p>{{errorMessage}}</p>\
-                <div class="ngdialog-buttons">\
-                    <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">Ok</button>\
-                </div>',
-      plain: true,
-      scope: $scope
-    })
-  }
-
   // ** EXPORT FUNCTIONS **
   // **********************
 
-  $scope.openFDVisualization = openFDVisualization;
-  $scope.openUCCVisualization = openUCCVisualization;
-  $scope.onPageChangeBS = onPageChangeBS;
-  $scope.onPageChangeUCC = onPageChangeUCC;
-  $scope.onPageChangeFD = onPageChangeFD;
-  $scope.onPageChangeIND = onPageChangeIND;
-  $scope.onPageChangeCUCC = onPageChangeCUCC;
-  $scope.onPageChangeOD = onPageChangeOD;
-  $scope.onPageChangeMVD = onPageChangeMVD;
-  $scope.onPageChangeDC = onPageChangeDC;
-
-  // ** FUNCTION CALLS **
-  // ********************
+  $scope.openVisualization = openVisualization;
 
   // load extended results
   if ($scope.extended) {
