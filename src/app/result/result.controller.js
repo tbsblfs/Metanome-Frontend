@@ -15,6 +15,8 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
   $scope.count = ($stateParams.count === 'true');
   $scope.load = ($stateParams.load === 'true');
 
+  $scope.extendedState = Object.assign({}, $stateParams, { extended: true});
+
   $scope.paginationValues = [10, 20, 30, 40, 50];
 
   var defaultCacheSize = 50;
@@ -41,7 +43,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
   }
 
   Object.keys(resultTypes).forEach(function (key) {
-    $scope[resultTypes[key].test] = ($stateParams[resultTypes[key].test] === 'true');
+    $scope[resultTypes[key].short] = ($stateParams[resultTypes[key].short] === 'true');
     $scope[key] = {
       count: 0,
       data: [],
@@ -80,7 +82,7 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    */
   function init() {
     Object.keys(resultTypes).forEach(function (key) {
-      if ($scope.file || $scope[resultTypes[key].test]) {
+      if ($scope.file || $scope[resultTypes[key].short]) {
         const scopeObj = $scope[key];
         CountResults.get(scopeObj.params.type).then(function(response) {
           var count = response.data;

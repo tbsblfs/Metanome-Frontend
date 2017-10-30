@@ -44,7 +44,7 @@ export default {
   type: 'Functional Dependency',
   sort: 'Determinant',
   resultHandler: fdHandler,
-  test: 'fd',
+  short: 'fd',
   columnNames: [
     { name: 'Determinant', order: 'determinant' },
     { name: 'Dependant', order: 'dependant' },

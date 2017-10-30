@@ -24,7 +24,7 @@ export default {
   type: 'Inclusion Dependency',
   sort: 'Dependant',
   resultHandler: indHandler,
-  test: 'ind',
+  short: 'ind',
   columnNames: [
     { name: 'Dependant', order: 'dependant' },
     { name: 'Referenced', order: 'referenced' },

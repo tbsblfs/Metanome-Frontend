@@ -40,7 +40,7 @@ export default {
     type: 'Denial Constraint',
     sort: 'Predicates',
     resultHandler: dcHandler,
-    test: 'dc',
+    short: 'dc',
     columnNames: [
       { order: "predicates", name: "Predicates" },
       { order: "size", name: "Size"},

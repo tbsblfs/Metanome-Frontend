@@ -16,7 +16,7 @@ export default {
   type: 'Unique Column Combination',
   sort: 'Column Combination',
   resultHandler: uccHandler,
-  test: 'ucc',
+  short: 'ucc',
   columnNames: [
     { name: 'Column Combination', order: 'columnCombination' },
   ],

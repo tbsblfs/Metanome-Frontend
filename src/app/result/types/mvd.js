@@ -28,7 +28,7 @@ export default {
   type: 'Multivalued Dependency',
   sort: 'Determinant',
   resultHandler: mvdHandler,
-  test: 'mvd',
+  short: 'mvd',
   columnNames: [
     { name: 'Determinant', order: 'determinant' },
     { name: 'Dependant', order: 'dependant' },

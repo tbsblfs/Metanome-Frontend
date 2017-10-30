@@ -17,7 +17,7 @@ export default  {
   type: 'Conditional Unique Column Combination',
   sort: 'Dependant',
   resultHandler: cuccHandler,
-  test: 'cucc',
+  short: 'cucc',
   columnNames: [
     { name: 'Column Combination', order: 'columnCombination' },
     { name: 'Condition', order: 'condition' },

@@ -29,7 +29,7 @@ export default {
   type: 'Basic Statistic',
   sort: 'Column Combination',
   resultHandler: basicStatHandler,
-  test: 'basicStat',
+  short: 'basicStat',
   columnNames: [
     { name: 'Column Combination', order: 'columnCombination' }
   ],

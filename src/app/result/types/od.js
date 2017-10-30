@@ -35,7 +35,7 @@ export default {
   type: 'Order Dependency',
   sort: 'LHS',
   resultHandler: odHandler,
-  test: 'od',
+  short: 'od',
   columnNames: [
     { name: 'LHS', order: 'LHS' },
     { name: 'RHS ', order: 'RHS' },
