@@ -18,4 +18,14 @@ export default  {
   sort: 'Dependant',
   resultHandler: cuccHandler,
   test: 'cucc',
+  columnNames: [
+    { name: 'Column Combination', order: 'columnCombination' },
+    { name: 'Condition', order: 'condition' },
+    { name: 'Coverage', order: 'coverage' },
+  ],
+  extendedColumnNames: [
+    { name: 'Column Ratio', order: 'columnRatio' },
+    { name: 'Occurrence Ratio', order: 'occurrenceRatio' },
+    { name: 'Uniqueness Ratio', order: 'uniquenessRatio' },
+  ]
 };

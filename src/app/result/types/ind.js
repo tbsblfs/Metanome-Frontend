@@ -25,4 +25,16 @@ export default {
   sort: 'Dependant',
   resultHandler: indHandler,
   test: 'ind',
+  columnNames: [
+    { name: 'Dependant', order: 'dependant' },
+    { name: 'Referenced', order: 'referenced' },
+  ],
+  extendedColumnNames: [
+    { name: 'Dependant Column Ratio', order: 'dependantColumnRatio' },
+    { name: 'Referenced Column Ratio', order: 'referencedColumnRatio' },
+    { name: 'Dependant Occurrence Ratio', order: 'dependantOccurrenceRatio' },
+    { name: 'Referenced Occurrence Ratio', order: 'referencedOccurrenceRatio' },
+    { name: 'Dependant Uniqueness Ratio', order: 'dependantUniquenessRatio' },
+    { name: 'Referenced Uniqueness Ratio', order: 'referencedUniquenessRatio' },
+  ]
 };

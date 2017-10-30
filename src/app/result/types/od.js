@@ -36,4 +36,19 @@ export default {
   sort: 'LHS',
   resultHandler: odHandler,
   test: 'od',
+  columnNames: [
+    { name: 'LHS', order: 'LHS' },
+    { name: 'RHS ', order: 'RHS' },
+    { name: 'Order Type', order: 'OrderType' },
+    { name: 'Comparison Operator', order: 'ComparisonOperator' },
+  ],
+  extendedColumnNames: [
+    { name: 'LHS Column Ratio', order: 'LHSColumnRatio' },
+    { name: 'RHS Column Ratio', order: 'RHSColumnRatio' },
+    { name: 'General Coverage', order: 'GeneralCoverage' },
+    { name: 'LHS Occurrence Ratio', order: 'LHSOccurrenceRatio' },
+    { name: 'RHS Occurrence Ratio', order: 'RHSOccurrenceRatio' },
+    { name: 'LHS Uniqueness Ratio', order: 'LHSUniquenessRatio' },
+    { name: 'RHS Uniqueness Ratio', order: 'RHSUniquenessRatio' },
+  ],
 };

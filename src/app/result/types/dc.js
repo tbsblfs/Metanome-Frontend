@@ -41,4 +41,10 @@ export default {
     sort: 'Predicates',
     resultHandler: dcHandler,
     test: 'dc',
+    columnNames: [
+      { order: "predicates", name: "Predicates" },
+      { order: "size", name: "Size"},
+    ],
+    extendedColumnNames: [
+    ],
 };

@@ -17,4 +17,14 @@ export default {
   sort: 'Column Combination',
   resultHandler: uccHandler,
   test: 'ucc',
+  columnNames: [
+    { name: 'Column Combination', order: 'columnCombination' },
+  ],
+  extendedColumnNames: [
+    { name: 'Column Ratio', order: 'columnRatio' },
+    { name: 'Occurrence Ratio', order: 'occurrenceRatio' },
+    { name: 'Uniqueness Ratio', order: 'uniquenessRatio' },
+    { name: 'Randomness', order: 'randomness' },
+  ],
+  visualization: 'UCC',
 };

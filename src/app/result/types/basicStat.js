@@ -1,6 +1,5 @@
 
 const basicStatHandler = (scopeObj) => (result) => {
-  if(!scopeObj.columnNames) scopeObj.columnNames = [];
   if(!scopeObj.columnNamesMap) scopeObj.columnNamesMap = {};
 
   var combinations = [];
@@ -31,4 +30,12 @@ export default {
   sort: 'Column Combination',
   resultHandler: basicStatHandler,
   test: 'basicStat',
+  columnNames: [
+    { name: 'Column Combination', order: 'columnCombination' }
+  ],
+  extendedColumnNames: [
+    { name: "Column Ratio", order: "columnRatio" },
+    { name: "Occurrence Ratio", order: "occurrenceRatio" },
+    { name: "Uniqueness Ratio", order: "uniquenessRatio"},
+  ]
 };

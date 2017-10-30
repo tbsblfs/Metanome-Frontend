@@ -45,4 +45,23 @@ export default {
   sort: 'Determinant',
   resultHandler: fdHandler,
   test: 'fd',
+  columnNames: [
+    { name: 'Determinant', order: 'determinant' },
+    { name: 'Dependant', order: 'dependant' },
+  ],
+  extendedColumnNames: [
+    { name: 'Extended Dependant', order: 'extendedDependant' },
+    { name: 'Determinant Column Ratio', order: 'determinantColumnRatio' },
+    { name: 'Dependant Column Ratio', order: 'dependantColumnRatio' },
+    { name: 'Determinant Occurrence Ratio', order: 'determinantOccurrenceRatio' },
+    { name: 'Dependant Occurrence Ratio', order: 'dependantOccurrenceRatio' },
+    { name: 'General Coverage', order: 'generalCoverage' },
+    { name: 'Determinant Uniqueness Ratio', order: 'determinantUniquenessRatio' },
+    { name: 'Dependant Uniqueness Ratio', order: 'dependantUniquenessRatio' },
+    { name: 'Information Gain Cell', order: 'informationGainCell' },
+    { name: 'Information Gain Byte', order: 'informationGainByte' },
+    { name: 'Pollution', order: 'pollution' },
+    { name: 'Pollution Column', order: 'pollutionColumn' },
+  ],
+  visualization: 'FD',
 };

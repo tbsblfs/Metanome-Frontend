@@ -58,6 +58,9 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
         sort: resultTypes[key].sort
       },
       handler: resultTypes[key].resultHandler,
+      columnNames: resultTypes[key].columnNames ? [...resultTypes[key].columnNames] : [],
+      extendedColumnNames: resultTypes[key].extendedColumnNames,
+      visualization: resultTypes[key].visualization,
     };
     $scope[key].pageChange = onPageChange($scope[key]);
   });

@@ -29,4 +29,21 @@ export default {
   sort: 'Determinant',
   resultHandler: mvdHandler,
   test: 'mvd',
+  columnNames: [
+    { name: 'Determinant', order: 'determinant' },
+    { name: 'Dependant', order: 'dependant' },
+    { name: 'General Coverage', order: 'generalCoverage' },
+  ],
+  extendedColumnNames: [
+    { name: 'Determinant Column Ratio', order: 'determinantColumnRatio' },
+    { name: 'Dependant Column Ratio', order: 'dependantColumnRatio' },
+    { name: 'Determinant Occurrence Ratio', order: 'determinantOccurrenceRatio' },
+    { name: 'Dependant Occurrence Ratio', order: 'dependantOccurrenceRatio' },
+    { name: 'Determinant Uniqueness Ratio', order: 'determinantUniquenessRatio' },
+    { name: 'Dependant Uniqueness Ratio', order: 'dependantUniquenessRatio' },
+    { name: 'Pollution', order: 'pollution' },
+    { name: 'Pollution Column', order: 'pollutionColumn' },
+    { name: 'Information Gain Cell', order: 'informationGainCell' },
+    { name: 'Information Gain Byte', order: 'informationGainByte' },
+  ]
 };
