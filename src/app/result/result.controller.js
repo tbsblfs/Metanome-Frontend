@@ -2,9 +2,8 @@
 
 import resultTypes from './types';
 
-export default function ($scope, Executions, Results, $q, usSpinnerService,
-                                       $timeout, $stateParams, LoadResults, CountResults, Execution, File,
-                                       ngDialog, $http, ENV_VARS) {
+export default function($scope, Executions, Results, $q, usSpinnerService,
+  $timeout, $stateParams, LoadResults, CountResults, Execution, File, ngDialog) {
 
   // ** VARIABLE DEFINITIONS **
   // **************************
@@ -80,17 +79,16 @@ export default function ($scope, Executions, Results, $q, usSpinnerService,
     Object.keys(resultTypes).forEach(function (key) {
       if ($scope.file || $scope[resultTypes[key].test]) {
         const scopeObj = $scope[key];
-        $http.get(ENV_VARS.API + '/api/result-store/count/' + scopeObj.params.type).
-          then(function (response) {
-            var count = response.data;
+        CountResults.get(scopeObj.params.type).then(function(response) {
+          var count = response.data;
 
-            if (count > 0) {
-              scopeObj.count = count;
-              if (!$scope.count) {
-                loadData(scopeObj);
-              }
+          if (count > 0) {
+            scopeObj.count = count;
+            if (!$scope.count) {
+              loadData(scopeObj);
             }
-          });
+          }
+        });
       }
     });
   }

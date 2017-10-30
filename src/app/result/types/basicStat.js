@@ -23,7 +23,6 @@ const basicStatHandler = (scopeObj) => (result) => {
     }
     entry[columnName.replace(/\s/g, '_')] = result.result.statisticMap[columnName].value;
   }
-  console.log(entry);
   return entry;
 }
 
