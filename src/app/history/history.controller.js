@@ -155,24 +155,18 @@ export default function($scope, Executions, $filter, $state, ngDialog, $timeout,
    * @param execution the execution
    */
   function confirmDelete(execution) {
-    $scope.confirmItem = execution;
-
-    $scope.confirmFunction = function() {
+    ngDialog.openConfirm({
+      template: require('./templates/confirm-delete.html'),
+      plain: true,
+    }).then(() => {
       $scope.startSpin();
       Delete.execution({
-        id: $scope.confirmItem.id
+        id: execution.id
       }, function() {
         $scope.loadExecutions()
       });
       $scope.stopSpin();
-      ngDialog.closeAll();
-    };
-
-    ngDialog.openConfirm({
-      template: require('./templates/confirm-delete.html'),
-      plain: true,
-      scope: $scope
-    })
+    });
   }
 
   /**
@@ -181,26 +175,20 @@ export default function($scope, Executions, $filter, $state, ngDialog, $timeout,
    * @param execution the execution
    */
   function confirmStop(execution) {
-    $scope.confirmItem = execution;
-
-    $scope.confirmFunction = function() {
+    ngDialog.openConfirm(() => {
+      template: require('./templates/confirm-stop.html'),
+      plain: true,
+    }).then(() => {
       $scope.startSpin();
 
       StopExecution.stop({
-        identifier: $scope.confirmItem.identifier
+        identifier: execution.identifier
       }, function() {
         $scope.cancelFunction();
         $scope.loadExecutions()
       });
       $scope.stopSpin();
-      ngDialog.closeAll();
-    };
-
-    ngDialog.openConfirm({
-      template: require('./templates/confirm-stop.html'),
-      plain: true,
-      scope: $scope
-    })
+    });
   }
   // ** EXPORT FUNCTIONS **
   // **********************
