@@ -36,4 +36,9 @@ angular.module('Metanome', [
     $urlRouterProvider.otherwise('/new');
     $qProvider.errorOnUnhandledRejections(false);
   })
-;
+  .factory('spinner', function(usSpinnerService) {
+
+    return {
+      startSpin: () => usSpinnerService.spin('spinner-1'),
+      stopSpin: () => usSpinnerService.stop('spinner-1'),
+  }});

@@ -2,7 +2,7 @@
 
 import resultTypes from './types';
 
-export default function($scope, Executions, Results, $q, usSpinnerService,
+export default function($scope, Results, $q, spinner,
   $timeout, $stateParams, LoadResults, CountResults, Execution, File, ngDialog) {
 
   // ** VARIABLE DEFINITIONS **
@@ -144,11 +144,12 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Open the visualizations for result type
    */
   function openVisualization(type) {
-    $scope.openVisualizationType = type;
     ngDialog.open({
       template: require('./templates/visualization.html'),
       plain: true,
-      scope: $scope
+      data: {
+        openVisualizationType: type,
+      }
     })
   }
 
@@ -157,11 +158,12 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * @param message the message
    */
   function openError(message) {
-    $scope.errorMessage = message;
     ngDialog.open({
       template: require('./templates/error.html'),
       plain: true,
-      scope: $scope
+      data: {
+        errorMessage: message,
+      }
     })
   }
 
@@ -169,8 +171,8 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Starts the spinner
    */
   function startSpin() {
-    $timeout(function() {
-      usSpinnerService.spin('spinner-2');
+    $timeout(() => {
+      spinner.startSpin();
     }, 10);
   }
 
@@ -178,8 +180,8 @@ export default function($scope, Executions, Results, $q, usSpinnerService,
    * Stops the spinner
    */
   function stopSpin() {
-    $timeout(function() {
-      usSpinnerService.stop('spinner-2');
+    $timeout(() => {
+      spinner.stopSpin();
     }, 10);
   }
 
