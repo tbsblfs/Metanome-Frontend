@@ -1,6 +1,6 @@
 'use strict';
 
-export default function($scope, Executions, $filter, $state, ngDialog, $timeout, Delete, StopExecution, usSpinnerService) {
+export default function($scope, Executions, $filter, $state, ngDialog, $timeout, Delete, StopExecution, spinner) {
 
   // ** VARIABLE DEFINITIONS **
   // **************************
@@ -138,7 +138,7 @@ export default function($scope, Executions, $filter, $state, ngDialog, $timeout,
    */
   function startSpin() {
     $timeout(function() {
-      usSpinnerService.spin('spinner-2');
+      spinner.startSpin();
     }, 100);
   }
 
@@ -146,7 +146,7 @@ export default function($scope, Executions, $filter, $state, ngDialog, $timeout,
    * Stop the spinner.
    */
   function stopSpin() {
-    usSpinnerService.stop('spinner-2');
+    spinner.stopSpin();
   }
 
   /**
@@ -175,7 +175,7 @@ export default function($scope, Executions, $filter, $state, ngDialog, $timeout,
    * @param execution the execution
    */
   function confirmStop(execution) {
-    ngDialog.openConfirm(() => {
+    ngDialog.openConfirm({
       template: require('./templates/confirm-stop.html'),
       plain: true,
     }).then(() => {
